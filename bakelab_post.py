@@ -45,6 +45,11 @@ class BakeLab_GenerateMaterials(Operator):
         uvm = nodes.new(type = 'ShaderNodeTexCoord')
         uvm.location = -1800, 0
         
+        # Add UDIM support - create mapping node
+        mapping = nodes.new(type='ShaderNodeMapping')
+        mapping.location = -1600, 0
+        links.new(uvm.outputs[2], mapping.inputs[0])
+        
         pass_available = False
         node_y_shift = 0
         for data in bakeMapData:
@@ -60,34 +65,38 @@ class BakeLab_GenerateMaterials(Operator):
                 imgNode.hide = True
                 imgNode.location = -1000,-100
                 imgNode.image = bake_image
+                # Enable UDIM support on image node
+                imgNode.image.source = 'TILED'
+                links.new(mapping.outputs[0], imgNode.inputs[0])
                 links.new(imgNode.outputs[0], pbr.inputs[0])
-                links.new(uvm.outputs[2], imgNode.inputs[0])
                 pass_available = True
             if bake_map.type == 'Combined':
                 imgNode = nodes.new(type = 'ShaderNodeTexImage')
                 imgNode.hide = True
                 imgNode.location = -1000, 300
                 imgNode.image = bake_image
+                imgNode.image.source = 'TILED'  # Enable UDIM
                 EmitNode = nodes.new(type = 'ShaderNodeEmission')
                 EmitNode.location = -400, 300
                 EmitNode.width = pbr.width
                 EmitNode.hide = True
+                links.new(mapping.outputs[0], imgNode.inputs[0])
                 links.new(imgNode.outputs[0], EmitNode.inputs[0])
                 links.new(EmitNode.outputs[0], out.inputs[0])
-                links.new(uvm.outputs[2], imgNode.inputs[0])
                 pass_available = True
             if bake_map.type == 'Normal':
                 imgNode = nodes.new(type = 'ShaderNodeTexImage')
                 imgNode.hide = True
                 imgNode.location = -1000, -500
                 imgNode.image = bake_image
+                imgNode.image.source = 'TILED'  # Enable UDIM
                 nmNode = nodes.new(type = 'ShaderNodeNormalMap')
                 nmNode.hide = True
                 nmNode.location = -700, -500
                 nmNode.space = bake_map.normal_space
+                links.new(mapping.outputs[0], imgNode.inputs[0])
                 links.new(imgNode.outputs[0], nmNode.inputs[1])
                 links.new(nmNode.outputs[0], pbr.inputs[20])
-                links.new(uvm.outputs[2], imgNode.inputs[0])
                 pass_available = True
             if bake_map.type == 'AO':
                 out.location[0] += 250

@@ -222,6 +222,32 @@ class BakeLabProperties(PropertyGroup):
             default = ""
         )
 
+class Baker(bpy.types.Operator):
+    """Bake textures with optional UDIM support
+    
+    This operator handles both regular UV baking and UDIM texture baking.
+    When UDIM is enabled in preferences, it will create tiled textures.
+    """
+    # ... rest of class implementation
+
+def execute(self, context):
+    try:
+        preferences = context.preferences.addons[__package__].preferences
+        
+        if preferences.use_udim:
+            if preferences.udim_tiles < 1:
+                self.report({'ERROR'}, "UDIM tiles must be greater than 0")
+                return {'CANCELLED'}
+                
+            # UDIM implementation
+            # ...
+            
+    except Exception as e:
+        self.report({'ERROR'}, f"Error during bake: {str(e)}")
+        return {'CANCELLED'}
+        
+    return {'FINISHED'}
+
 classes = (
     BakeLabProperties,
     
@@ -244,6 +270,7 @@ classes = (
 )
 
 def register():
+    bpy.utils.register_class(BakeLabPreferences)
     for cls in classes:
         bpy.utils.register_class(cls)
         
@@ -253,6 +280,7 @@ def register():
     bpy.types.Scene.BakeLabMapIndex = IntProperty(name = 'BakeLab Map List Index')
 
 def unregister():
+    bpy.utils.unregister_class(BakeLabPreferences) 
     for cls in classes:
         bpy.utils.unregister_class(cls)
     
